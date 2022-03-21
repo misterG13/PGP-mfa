@@ -1,0 +1,1 @@
+# 'GnuPG' a PHP extension, helpful install tips

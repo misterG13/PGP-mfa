@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Multi-factor Authentication with PGP</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {CSS-LOGIN}
+</head>
+
+<body>
+  <form>
+    <h1>Authenticate</h1>
+    {ERROR-DISPLAY}
+    <div class="container">
+      <textarea name="decryptThis" placeholder="encrypted MFA code" tabindex="1" autofocus
+        readonly>{MFA-CODE}</textarea>
+      <br>
+      <input type="text" name="pinCode" placeholder="Decrypt MFA Code" maxlength="64" alt="Decrypt MFA Code"
+        tabindex="2">
+      <button type="submit" name="submit" value="doAuth" tabindex="3">Authenticate</button>
+    </div>
+    <div class="container" style="background-color:#f1f1f1">
+      <button class="cancelbtn" type="submit" name="submit" value="reload" tabindex="4">Reload</button>
+    </div>
+  </form>
+</body>
+
+</html>
