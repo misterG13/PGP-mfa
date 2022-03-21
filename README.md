@@ -27,3 +27,8 @@ This PHP Class interacts with the PHP module/extension known as GnuPG (GNU Priva
     - Copy this message to your local machine with the Private key
     - Decrypt this message and copy the code inside
     - Paste the code as a password to continue the log in process
+
+  * OR
+
+  * Copy 'PGPmfa.php' from '/php/' folder and reference the class as needed in your own application
+    - Two globals in $_SESSION are required and are noted at the top of the Class' page
