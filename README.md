@@ -19,7 +19,7 @@ This PHP Class interacts with the PHP module/extension known as GnuPG (GNU Priva
   * On a local machine (anywhere but the web host with this application)
     - Generate a test key pair with PGP (private + public keys)
   * Replace contents of '/assets/publicPGPkey.txt' with the previously generated, Public key
-  * Open 'index.php' and follow the prompts
+  * Open 'index.php' in your web browser and follow the prompts
     - On success; you will see an encrypted message
     - Copy this message to your local machine with the Private key
     - Decrypt this message and copy the code inside
