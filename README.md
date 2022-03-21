@@ -1,9 +1,6 @@
 # PGPmfa() a PHP Class for PGP
 Multi-factor Authentication using a Public PGP key for web based applications
 
-## UNDER CONSTRUCTION
-Being updated to match PHP 8.1 & PSR12 standards/practices. (03/2022)
-
 ## Multi-factor Authentication with PGP
 Second form (or main form) of authentication to access highly secure web applications. 
 
