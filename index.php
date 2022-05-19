@@ -59,6 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (strcmp($_POST['submit'], 'reload') === 0) {
 
     header('Location: index.php', true, 302);
+    exit;
+    ob_flush();
   }
 
   // check which button was pressed

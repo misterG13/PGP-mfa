@@ -61,6 +61,8 @@ class PGPmfa
 
   public function testPgpkey($publicKey)
   {
+    putenv("GNUPGHOME=/tmp");
+    
     $gpg = new gnupg();
     $key = $gpg->import($publicKey);
     
