@@ -39,7 +39,8 @@ class PGPmfa
 
     $_SESSION['pgp']['secretEncrypted'] = $encrypted;
 
-    $gpg->clearencryptkeys();
+    //$gpg->clearencryptkeys(); // removes ALL encryption (public) keys
+    $gpg->deletekey($key['fingerprint'], true);
     return true;
   }
 
@@ -62,12 +63,12 @@ class PGPmfa
   public function testPgpkey($publicKey)
   {
     putenv("GNUPGHOME=/tmp");
-    
+
     $gpg = new gnupg();
     $key = $gpg->import($publicKey);
-    
-    /*
-    array $key:
+
+    /* format of array
+    $key:
       (
         [imported] => (int),
         [unchanged] => (int),
@@ -81,18 +82,27 @@ class PGPmfa
       )
     */
 
-    //echo 'print_r key array: ' . print_r($key) . '<br>';
+    /* verify $key format
+    echo '<pre>';
+    print_r($key);
+    echo '</pre>';
+    */
 
     // will print error from last function called:
-    //echo 'get error: ' . $gpg->geterror() . '<br>';
-    //echo 'get error details: <br>';
-    //print_r($gpg->geterrorinfo());
+    /*
+    echo 'get error: ' . $gpg->geterror() . '<br>';
+    echo 'get error details: <br>';
+    echo '<pre>';
+    print_r($gpg->geterrorinfo());
+    echo '</pre>';
+    */
 
     if ($key !== false) {
 
       if ($gpg->addencryptkey($key['fingerprint'])) {
 
-        $gpg->clearencryptkeys();
+        //$gpg->clearencryptkeys(); // removes ALL encryption (public) keys
+        $gpg->deletekey($key['fingerprint'], true);
         return true;
       }
     }
