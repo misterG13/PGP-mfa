@@ -22,7 +22,7 @@ input[type=text], textarea {
 	box-sizing: border-box;
 }
 textarea {
-    height: 150px;
+    height: 350px;
 	resize: vertical;
 }
 button {
@@ -48,4 +48,7 @@ button:hover {
 }
 .container {
 	padding: 16px;
+}
+.error {
+	color: #FF5050;
 }
