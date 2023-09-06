@@ -49,8 +49,10 @@ class PGPmfa
 
     public function compareSecrets($input)
     {
-        if (strcmp($input, $_SESSION['pgp']['secret']) === 0) {
-            return true;
+        if (!empty($_SESSION['pgp']['secret'])) {
+            if (strcmp($input, $_SESSION['pgp']['secret']) === 0) {
+                return true;
+            }
         }
 
         return false;
