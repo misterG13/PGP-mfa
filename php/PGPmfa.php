@@ -19,11 +19,27 @@ class PGPmfa
 {
     protected function generateSecret(int $length = 16)
     {
+        // Set minimum length
         if (intval($length) < 16) {
             $length = 16;
         }
 
-        $_SESSION['pgp']['secret'] = bin2hex(random_bytes($length));
+        // PHP 5.6+ openssl_random_pseudo_bytes()
+        if (version_compare(PHP_VERSION, '5.6.0') >= 0) {
+            $bytes = openssl_random_pseudo_bytes($i, $cstrong);
+            while ($cstrong != true) {
+                $bytes = openssl_random_pseudo_bytes($i, $cstrong);
+            }
+            $hex   = bin2hex($bytes);
+        }
+
+        // PHP 7.0+ random_bytes()
+        if (version_compare(PHP_VERSION, '5.6.0') >= 0) {
+            $hex = bin2hex(random_bytes($length));
+        }
+
+        // Save to global
+        $_SESSION['pgp']['secret'] = $hex;
         return $_SESSION['pgp']['secret'];
     }
 
@@ -61,7 +77,12 @@ class PGPmfa
     public function clearSecret()
     {
         unset($_SESSION['pgp']);
-        return true;
+
+        if (!isset($_SESSION['pgp'])) {
+            return true;
+        }
+
+        return false;
     }
 
     public function testPgpkey($publicKey)
@@ -71,8 +92,8 @@ class PGPmfa
         $gpg = new gnupg();
         $key = $gpg->import($publicKey);
 
-      /* format of array
-      $key:
+        /* Format of array $key
+        Array
         (
         [imported] => (int),
         [unchanged] => (int),
@@ -84,22 +105,21 @@ class PGPmfa
         [skippedkeys] => (int),
         [fingerprint] => (string)
         )
-      */
+        */
 
-      /* verify $key format
-      echo '<pre>';
-      print_r($key);
-      echo '</pre>';
-      */
+        /* Verify array contents
+        echo '<pre>';
+        print_r($key);
+        echo '</pre>';
+        */
 
-      // will print error from last function called:
-      /* DEBUGING:
-      echo 'get error: ' . $gpg->geterror() . '<br>';
-      echo 'get error details: <br>';
-      echo '<pre>';
-      print_r($gpg->geterrorinfo());
-      echo '</pre>';
-      */
+        // DEBUGING:
+        // '$gpg->geterror()' will print error from last function called
+        // echo 'get error: ' . $gpg->geterror() . '<br>';
+        // echo 'get error details: <br>';
+        // echo '<pre>';
+        // print_r($gpg->geterrorinfo());
+        // echo '</pre>';
 
         if ($key !== false) {
             if ($gpg->addencryptkey($key['fingerprint'])) {

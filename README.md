@@ -2,14 +2,14 @@
 Multi-factor Authentication using a Public PGP key for web based applications
 
 ## Multi-factor Authentication with PGP
-Second form (or main form) of authentication to access highly secure web applications. 
+Second form (or main form) of authentication to access highly secure web applications.
 
 A user generates there own PGP key pairs, on a local machine. The Public Key portion of the pair will be required during user sign up. This eliminates the need to remember several passwords and removes liability from a web application having to store secure credentials.
 
 This PHP Class interacts with the PHP module/extension known as GnuPG (GNU Privacy Guard). This software allows the web host to import, encrypt/decrypt and test the validity of PGP keys.
 
 # Requirements
-  * 1st Option: Web Host with 'gnupg' or 'gnupg2' and PHP version 7 or better installed
+  * 1st Option: Web Host with 'gnupg' or 'gnupg2' and PHP version 5.6.0 or better installed
   * 2nd Option: Web Host with admin/root access, needed to:
     - Install/Upgrade host to PHP version 7 or higher (https://www.php.net/downloads)
     - Install/Upgrade host to 'GnuPG/GnuPG2' (https://gnupg.org/)
