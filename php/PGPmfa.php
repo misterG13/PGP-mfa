@@ -26,9 +26,9 @@ class PGPmfa
 
         // PHP 5.6+ openssl_random_pseudo_bytes()
         if (version_compare(PHP_VERSION, '5.6.0') >= 0) {
-            $bytes = openssl_random_pseudo_bytes($i, $cstrong);
+            $bytes = openssl_random_pseudo_bytes($length, $cstrong);
             while ($cstrong != true) {
-                $bytes = openssl_random_pseudo_bytes($i, $cstrong);
+                $bytes = openssl_random_pseudo_bytes($length, $cstrong);
             }
             $hex   = bin2hex($bytes);
         }
