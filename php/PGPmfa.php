@@ -34,7 +34,7 @@ class PGPmfa
         }
 
         // PHP 7.0+ random_bytes()
-        if (version_compare(PHP_VERSION, '5.6.0') >= 0) {
+        if (version_compare(PHP_VERSION, '7.0.0') >= 0) {
             $hex = bin2hex(random_bytes($length));
         }
 
