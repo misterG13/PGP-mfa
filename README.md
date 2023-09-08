@@ -9,9 +9,9 @@ A user generates there own PGP key pairs, on a local machine. The Public Key por
 This PHP Class interacts with the PHP module/extension known as GnuPG (GNU Privacy Guard). This software allows the web host to import, encrypt/decrypt and test the validity of PGP keys.
 
 # Requirements
-  * 1st Option: Web Host with 'gnupg' or 'gnupg2' and PHP version 5.6.0 or better installed
+  * 1st Option: Web Host with openSSL 3.0+, 'gnupg' or 'gnupg2' and PHP version 5.6.0+ installed
   * 2nd Option: Web Host with admin/root access, needed to:
-    - Install/Upgrade host to PHP version 7 or higher (https://www.php.net/downloads)
+    - Install/Upgrade host to PHP version 5.6.0 or higher (https://www.php.net/downloads)
     - Install/Upgrade host to 'GnuPG/GnuPG2' (https://gnupg.org/)
 
 # Installation
