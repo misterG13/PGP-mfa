@@ -1,31 +1,41 @@
 <?php
 
+namespace php;
+
 /**
- * Class  'PGPmfa()'
+ * Class: PGPmfa(int $length, bool $rBtyes)
  *
- * Author 'misterG13'
+ * Author: MisterG13
  *
- * GNU Privacy Guard Functions:
- *   - https://www.php.net/manual/en/book.gnupg.php
+ * Namespace: 'php'
  *
  * Globals:
  *   - $_SESSION['pgp']['secret']
  *   - $_SESSION['pgp']['secretEncrypted']
+ *
+ * GNU Privacy Guard Functions:
+ *   - https://www.php.net/manual/en/book.gnupg.php
  */
-
-namespace php;
 
 class PGPmfa
 {
-    protected function generateSecret(int $length = 16)
+    protected function generateSecret(int $length = 16, bool $rBytes = false)
     {
         // Set minimum length
         if (intval($length) < 16) {
             $length = 16;
         }
 
+        /*
+        After recent reading, openssl_random_pseudo_bytes()
+        seems to be the prefered generation method.
+        Now using the system's openSSL v3.0+. Patching previous
+        CVE(s)
+        */
+
         // PHP 5.6+ openssl_random_pseudo_bytes()
-        if (version_compare(PHP_VERSION, '5.6.0') >= 0) {
+        // https://www.php.net/manual/en/function.openssl-random-pseudo-bytes.php
+        if ($rBytes != true && version_compare(PHP_VERSION, '5.6.0') >= 0) {
             $bytes = openssl_random_pseudo_bytes($length, $cstrong);
             while ($cstrong != true) {
                 $bytes = openssl_random_pseudo_bytes($length, $cstrong);
@@ -33,8 +43,15 @@ class PGPmfa
             $hex   = bin2hex($bytes);
         }
 
+        /*
+        random_bytes() is useful when installing openSSL on
+        the host is not an option. Claims have been made that this
+        function has superior performance when hosted on a Windows box
+        */
+
         // PHP 7.0+ random_bytes()
-        if (version_compare(PHP_VERSION, '7.0.0') >= 0) {
+        // https://www.php.net/manual/en/function.random-bytes
+        if ($rBytes == true && version_compare(PHP_VERSION, '7.0.0') >= 0) {
             $hex = bin2hex(random_bytes($length));
         }
 
@@ -113,7 +130,7 @@ class PGPmfa
         echo '</pre>';
         */
 
-        // DEBUGING:
+        // DEBUGGING:
         // '$gpg->geterror()' will print error from last function called
         // echo 'get error: ' . $gpg->geterror() . '<br>';
         // echo 'get error details: <br>';
