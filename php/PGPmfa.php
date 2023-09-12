@@ -55,6 +55,8 @@ class PGPmfa
             $hex = bin2hex(random_bytes($length));
         }
 
+        // Custom messaging around secret
+
         // Save to global
         $_SESSION['pgp']['secret'] = $hex;
         return $_SESSION['pgp']['secret'];
@@ -75,6 +77,8 @@ class PGPmfa
 
         $_SESSION['pgp']['secretEncrypted'] = $encrypted;
 
+        // no need to store public keys in system keyring
+        // maybe move to __destruct() ?
         // $gpg->clearencryptkeys(); // removes ALL encryption (public) keys
         $gpg->deletekey($key['fingerprint'], true);
         return true;
@@ -106,7 +110,7 @@ class PGPmfa
     {
         putenv("GNUPGHOME=/tmp");
 
-        $gpg = new gnupg();
+        $gpg = new \gnupg();
         $key = $gpg->import($publicKey);
 
         /* Format of array $key
