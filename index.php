@@ -15,54 +15,71 @@
  *   - Builds the login form
  */
 
-/* -------------------- PAGE PREPERATION ------------------------- */
+/* -------------------- PAGE PREPARATION ------------------------- */
 
 ob_start();
 session_start();
 
-// set a CONST as the root dir:
+// set a CONST as the root dir
 defined('_ROOT_') || define('_ROOT_', __DIR__);
 
-// include class file:
-$file = _ROOT_ . '/php/PGPmfa.php';
-if ((require_once $file) == true) {
-  // initialize a new class instance
-  $pgpMFA = new php\PGPmfa();
-  // DEBUGGING:
-  // if ($pgpMFA) {
-  //     echo 'class initiated';
-  //     echo '<br>';
-  // } else {
-  //     echo 'class failed to initialize';
-  //     echo '<br>';
-  // }
-} else {
-  // DEBUGGING:
-  // echo 'class failed to include file';
-  // echo '<br>';
-}
+// local variables
+$txtPGPkey = _ROOT_ . '/assets/publicPGPkey.txt';
 
-/* -------------------- END PAGE PREPERATION --------------------- */
+// include class file
+include_once _ROOT_ . '/php/PGPmfa.php';
+
+// Insert namespace and alias
+use php\PGPmfa as PGPmfa;
+
+/* -------------------- END PAGE PREPARATION --------------------- */
 
 
 /* -------------------- PROGRAMMING ------------------------------ */
+// DEBUGGING:
+/* echo '<pre>';
+print_r($_SESSION);
+echo '</pre>'; */
+
+// Every page load; Verify class include
+if (class_exists('php\PGPmfa')) {
+
+  // Memory holds serialized class object (string)
+  if (!empty($_SESSION['php']['PGPmfa']['objStorage'])) {
+
+    // unserialize string from memory; restores to class object
+    $pgpMFA = unserialize($_SESSION['php']['PGPmfa']['objStorage']);
+  }
+
+  // Memory empty; start a new class object
+  if (empty($_SESSION['php']['PGPmfa']['objStorage'])) {
+
+    // Import Public PGP Key
+    if (file_exists($txtPGPkey)) {
+
+      // Load 'pgpkey'    
+      $publicKey = file_get_contents($txtPGPkey);
+
+      // Verify contents
+      if (!empty($publicKey)) {
+
+        // Instantiate
+        $pgpMFA = new PGPmfa($publicKey, 'Welcome to my website!' . "\n");
+      } else {
+        $error = 'public pgpkey failed to load';
+      }
+    }
+  }
+
+  // Pull encrypted secret message from object
+  $_SESSION['php']['PGPmfa']['encrypted'] = $pgpMFA->getSecretMessageEncrypted();
+} else {
+  $error = 'class failed to include';
+}
 
 // NO form submission (regular page visit)
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-
-  // 1st load 'pgpkey'
-  if (file_exists(_ROOT_ . '/assets/publicPGPkey.txt')) {
-    $pgpkey = file_get_contents(_ROOT_ . '/assets/publicPGPkey.txt');
-  } else {
-    $error  = 'public pgpkey failed to load';
-  }
-
-  // 2nd generate secret message
-  if (empty($_SESSION['pgp']['secretEncrypted'])) {
-    if (!$pgpMFA->encryptSecret($pgpkey)) {
-      $error = 'failed to encrypt mfa code';
-    }
-  }
+  // placeholder
 }
 
 // YES form submission (html button 'submit' has been clicked)
@@ -70,6 +87,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   // button 'submit' === 'reload'
   if (strcmp($_POST['submit'], 'reload') === 0) {
+
+    // Clear object 1st; class destructor evades session destroy
+    unset($pgpMFA);
 
     // properly remove a session:
     // https://www.php.net/manual/en/function.session-unset.php#107089
@@ -88,12 +108,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   // button 'submit' === 'doAuth'
   if (strcmp($_POST['submit'], 'doAuth') === 0) {
+
     if (empty($_POST['pinCode'])) {
+
       $error = 'mfa code is empty';
     } elseif ($pgpMFA->compareSecrets($_POST['pinCode'])) {
+
       $error = 'passed mfa authentication';
-      $pgpMFA->clearSecret();
+
+      // Remove object; remove serialization
+      unset($pgpMFA, $_SESSION['php']['PGPmfa']);
     } else {
+
       $error = 'incorrect mfa code';
     }
   }
@@ -112,27 +138,27 @@ $htmlUTF8Page = file_get_contents(_ROOT_ . '/html/authenticate.html', true);
 // {CSS-LOGIN}
 $html = '';
 if (file_exists('css/login.css')) {
-  $html = '<style type="text/css">';
+  $html  = '<style type="text/css">';
   $html .= file_get_contents(_ROOT_ . '/css/login.css');
   $html .= '</style>';
 }
 $htmlUTF8Page = str_replace('{CSS-LOGIN}', $html, $htmlUTF8Page);
 
 // {ERROR-DISPLAY}
-$html = (!empty($error)) ? $error : '';
+$html         = (!empty($error)) ? $error : '';
 $htmlUTF8Page = str_replace('{ERROR-DISPLAY}', ucwords($html), $htmlUTF8Page);
 
 // {FORM-ACTION}
-$html  = '';
-$html  = '<form action="';
-$html .= htmlspecialchars($_SERVER['PHP_SELF']);
-$html .= '" method="post">';
-$htmlUTF8Page = str_replace('<form>', $html, $htmlUTF8Page);
+$html          = '';
+$html          = '<form action="';
+$html         .= htmlspecialchars($_SERVER['PHP_SELF']);
+$html         .= '" method="post">';
+$htmlUTF8Page  = str_replace('<form>', $html, $htmlUTF8Page);
 
 // {MFA-CODE}
 $html = '';
-if (!empty($_SESSION['pgp']['secretEncrypted'])) {
-  $html = $_SESSION['pgp']['secretEncrypted'];
+if (!empty($_SESSION['php']['PGPmfa']['encrypted'])) {
+  $html = $_SESSION['php']['PGPmfa']['encrypted'];
 }
 $htmlUTF8Page = str_replace('{MFA-CODE}', $html, $htmlUTF8Page);
 

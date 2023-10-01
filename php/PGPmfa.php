@@ -3,15 +3,11 @@
 namespace php;
 
 /**
- * Class: PGPmfa(int $length, bool $rBtyes)
+ * PGPmfa(string $publicKey, string $message = '')
  *
  * Author: MisterG13
  *
  * Namespace: 'php'
- *
- * Globals:
- *   - $_SESSION['pgp']['secret']
- *   - $_SESSION['pgp']['secretEncrypted']
  *
  * GNU Privacy Guard Functions:
  *   - https://www.php.net/manual/en/book.gnupg.php
@@ -19,137 +15,173 @@ namespace php;
 
 class PGPmfa
 {
-    protected function generateSecret(int $length = 16, bool $rBytes = false)
-    {
-        // Set minimum length
-        if (intval($length) < 16) {
-            $length = 16;
-        }
+  private $publicKey;
+  private $fingerprint;
+  private $secret;
+  private $secretEncrypted;
+  private $gnupg;
 
-        /*
-        After recent reading, openssl_random_pseudo_bytes()
-        seems to be the prefered generation method.
-        Now using the system's openSSL v3.0+. Patching previous
-        CVE(s)
-        */
+  /**
+   * Import a user's public pgp key to begin
+   *
+   * @param  string $publicKey
+   * @param  string $message
+   */
+  public function __construct(string $publicKey, string $message = '')
+  {
+    // Keyring storage directory (on host)
+    putenv("GNUPGHOME=/tmp");
 
-        // PHP 5.6+ openssl_random_pseudo_bytes()
-        // https://www.php.net/manual/en/function.openssl-random-pseudo-bytes.php
-        if ($rBytes != true && version_compare(PHP_VERSION, '5.6.0') >= 0) {
-            $bytes = openssl_random_pseudo_bytes($length, $cstrong);
-            while ($cstrong != true) {
-                $bytes = openssl_random_pseudo_bytes($length, $cstrong);
-            }
-            $hex   = bin2hex($bytes);
-        }
+    // '\' to escape the local namespace and access global class
+    $this->gnupg = new \gnupg();
 
-        /*
-        random_bytes() is useful when installing openSSL on
-        the host is not an option. Claims have been made that this
-        function has superior performance when hosted on a Windows box
-        */
+    // Save the user's public key to memory
+    $this->publicKey = $publicKey;
 
-        // PHP 7.0+ random_bytes()
-        // https://www.php.net/manual/en/function.random-bytes
-        if ($rBytes == true && version_compare(PHP_VERSION, '7.0.0') >= 0) {
-            $hex = bin2hex(random_bytes($length));
-        }
-
-        // Custom messaging around secret
-
-        // Save to global
-        $_SESSION['pgp']['secret'] = $hex;
-        return $_SESSION['pgp']['secret'];
+    // Pull 'fingerprint' from 'publicKey'
+    if (!$this->pullFingerprint()) {
+      return false;
     }
 
-    public function encryptSecret($publicKey)
-    {
-        putenv("GNUPGHOME=/tmp");
+    // Generate 'secret' code
+    if (!$this->genSecret()) {
+      return false;
+    }
 
-        // '\' to escape the local namespace and access global class
-        $gpg = new \gnupg();
-        $key = $gpg->import($publicKey);
+    // Format custom messaging (optional)
+    if (empty($message)) {
+      $message = 'Welcome to my Website!' . "\n";
+    }
 
-        $gpg->addencryptkey($key['fingerprint']);
+    // Encrypt 'secret' with user's 'publicKey' 'fingerprint'
+    if (!$this->encryptSecretMessage($message)) {
+      return false;
+    }
+  }
 
-        $secretKey = $this->generateSecret();
-        $encrypted = $gpg->encrypt($secretKey);
+  private function pullFingerprint()
+  {
+    // Global object alias
+    $gnupg = $this->gnupg;
 
-        $_SESSION['pgp']['secretEncrypted'] = $encrypted;
+    // Import $publicKey data as an array
+    $keyData = $gnupg->import($this->publicKey);
 
-        // no need to store public keys in system keyring
-        // maybe move to __destruct() ?
-        // $gpg->clearencryptkeys(); // removes ALL encryption (public) keys
-        $gpg->deletekey($key['fingerprint'], true);
+    /* $keyData = array(
+      [imported]        => (int),
+      [unchanged]       => (int),
+      [newuserids]      => (int),
+      [newsubkeys]      => (int),
+      [secretimported]  => (int),
+      [secretunchanged] => (int),
+      [newsignatures]   => (int),
+      [skippedkeys]     => (int),
+      [fingerprint]     => (string)
+    ) */
+
+    if (!empty($keyData['fingerprint'])) {
+
+      // Save 'fingerprint' to object
+      $this->fingerprint = $keyData['fingerprint'];
+      return true;
+    }
+
+    return false;
+  }
+
+  private function genSecret(int $length = 16, bool $rBytes = false)
+  {
+    // $rBytes turns the use of random_bytes() on/off; default = false/off
+
+    // Set minimum length
+    if (intval($length) < 16) {
+      $length = 16;
+    }
+
+    /*
+      After recent reading, openssl_random_pseudo_bytes()
+      seems to be the preferred generation method.
+      Now using the system's openSSL v3.0+. Patching previous
+      CVE(s)
+    */
+
+    // PHP 5.6+ openssl_random_pseudo_bytes()
+    // https://www.php.net/manual/en/function.openssl-random-pseudo-bytes.php
+    if ($rBytes != true && version_compare(PHP_VERSION, '5.6.0') >= 0) {
+      $bytes = openssl_random_pseudo_bytes($length, $cryptoStrong);
+      while ($cryptoStrong != true) {
+        $bytes = openssl_random_pseudo_bytes($length, $cryptoStrong);
+      }
+      $this->secret = bin2hex($bytes);
+    }
+
+    /*
+      random_bytes() is useful when installing openSSL on
+      the host is not an option. Claims have been made that this
+      function has superior performance when hosted on a Windows box
+    */
+
+    // PHP 7.0+ random_bytes()
+    // https://www.php.net/manual/en/function.random-bytes
+    if ($rBytes == true && version_compare(PHP_VERSION, '7.0.0') >= 0) {
+      $this->secret = bin2hex(random_bytes($length));
+    }
+
+    if (!empty($this->secret)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  private function encryptSecretMessage(string $message = '')
+  {
+    // Global object alias
+    $gnupg = $this->gnupg;
+
+    // Add to keyring; 'fingerprint' from the public key
+    $gnupg->addencryptkey($this->fingerprint);
+
+    // Custom messaging around secret
+    $message = $message . $this->secret;
+
+    // Uses public key from last addencryptkey() to encrypt secret
+    // Save the encrypted message to memory
+    $this->secretEncrypted = $gnupg->encrypt($message);
+
+    // Remove public key from system keyring
+    if ($gnupg->deletekey($this->fingerprint, true)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  public function getSecretMessageEncrypted()
+  {
+    if (!empty($this->secretEncrypted)) {
+      return $this->secretEncrypted;
+    }
+
+    return '';
+  }
+
+  public function compareSecrets(string $input)
+  {
+    if (!empty($this->secret)) {
+      if (strcmp($input, $this->secret) === 0) {
         return true;
+      }
     }
 
-    public function compareSecrets($input)
-    {
-        if (!empty($_SESSION['pgp']['secret'])) {
-            if (strcmp($input, $_SESSION['pgp']['secret']) === 0) {
-                return true;
-            }
-        }
+    return false;
+  }
 
-        return false;
-    }
-
-    public function clearSecret()
-    {
-        unset($_SESSION['pgp']);
-
-        if (!isset($_SESSION['pgp'])) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public function testPgpkey($publicKey)
-    {
-        putenv("GNUPGHOME=/tmp");
-
-        $gpg = new \gnupg();
-        $key = $gpg->import($publicKey);
-
-        /* Format of array $key
-        Array
-        (
-        [imported] => (int),
-        [unchanged] => (int),
-        [newuserids] => (int),
-        [newsubkeys] => (int),
-        [secretimported] => (int),
-        [secretunchanged] => (int),
-        [newsignatures] => (int),
-        [skippedkeys] => (int),
-        [fingerprint] => (string)
-        )
-        */
-
-        /* Verify array contents
-        echo '<pre>';
-        print_r($key);
-        echo '</pre>';
-        */
-
-        // DEBUGGING:
-        // '$gpg->geterror()' will print error from last function called
-        // echo 'get error: ' . $gpg->geterror() . '<br>';
-        // echo 'get error details: <br>';
-        // echo '<pre>';
-        // print_r($gpg->geterrorinfo());
-        // echo '</pre>';
-
-        if ($key !== false) {
-            if ($gpg->addencryptkey($key['fingerprint'])) {
-                //$gpg->clearencryptkeys(); // removes ALL encryption (public) keys
-                $gpg->deletekey($key['fingerprint'], true);
-                return true;
-            }
-        }
-
-        return false;
-    }
+  /**
+   * Serialize current object to $_SESSION['php']['PGPmfa']['objStorage']
+   */
+  public function __destruct()
+  {
+    $_SESSION['php']['PGPmfa']['objStorage'] = serialize($this);
+  }
 }
