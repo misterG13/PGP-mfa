@@ -20,13 +20,13 @@
 ob_start();
 session_start();
 
-// set a CONST as the root dir
+// Set a CONST as the root dir
 defined('_ROOT_') || define('_ROOT_', __DIR__);
 
-// local variables
+// Build local variables
 $txtPGPkey = _ROOT_ . '/assets/publicPGPkey.txt';
 
-// include class file
+// Include class file
 include_once _ROOT_ . '/php/PGPmfa.php';
 
 // Insert namespace and alias
@@ -111,13 +111,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($_POST['pinCode'])) {
 
+      // Display error status
       $error = 'mfa code is empty';
     } elseif ($pgpMFA->compareSecrets($_POST['pinCode'])) {
 
+      // Display success
       $error = 'passed mfa authentication';
 
       // Remove object; remove serialization
       unset($pgpMFA, $_SESSION['php']['PGPmfa']);
+
+      // Forward to 'account' area
+      // header('Location: account.php', true, 302);
     } else {
 
       $error = 'incorrect mfa code';

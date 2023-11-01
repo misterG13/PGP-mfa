@@ -22,7 +22,8 @@ class PGPmfa
   private $gnupg;
 
   /**
-   * Import a user's public pgp key to begin
+   * Import a user's public pgp key to begin. You can add a welcome message
+   * that will show inside the encrypt message (optional).
    *
    * @param  string $publicKey
    * @param  string $message
