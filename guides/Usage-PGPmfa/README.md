@@ -62,7 +62,7 @@
         inside the 'index.php' file.
     
     Example:
-        echo $_SESSION['pgp']['secretEncrypted'];
+        echo $_SESSION['php']['PGPmfa']['encrypted'];
 
 ## Authenticating the decrypted code (from user):
 
