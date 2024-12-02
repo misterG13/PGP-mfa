@@ -17,12 +17,12 @@
             <textarea name="decryptThis" placeholder="encrypted MFA code" tabindex="1" autofocus
                 readonly>{MFA-CODE}</textarea>
             <br>
-            <input type="text" name="pinCode" placeholder="Decrypt MFA Code" maxlength="64" alt="Decrypt MFA Code"
+            <input type="text" name="mfaCode" placeholder="Decrypt MFA Code" maxlength="64" alt="Decrypt MFA Code"
                 tabindex="2">
-            <button type="submit" name="submit" value="doAuth" tabindex="3">Authenticate</button>
+            <button type="submit" name="submit" value="authenticate" tabindex="3">Authenticate</button>
         </div>
         <div class="container" style="background-color:#f1f1f1">
-            <button class="cancelbtn" type="submit" name="submit" value="reload" tabindex="4">New Code</button>
+            <button class="cancelbtn" type="submit" name="submit" value="newCode" tabindex="4">New Code</button>
         </div>
     </form>
 </body>
