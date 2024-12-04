@@ -118,9 +118,10 @@ $htmlUTF8Page = file_get_contents(_ROOT_ . '/html/authenticate.html', true);
 
 // {CSS-LOGIN}
 $html = '';
-if (file_exists(_ROOT_ . '/html/css/login.css')) {
+$loc = _ROOT_ . '/html/css/login.css';
+if (file_exists($loc)) {
   $html  = '<style type="text/css">';
-  $html .= file_get_contents(_ROOT_ . '/html/css/login.css');
+  $html .= file_get_contents($loc);
   $html .= '</style>';
 }
 $htmlUTF8Page = str_replace('{CSS-LOGIN}', $html, $htmlUTF8Page);
