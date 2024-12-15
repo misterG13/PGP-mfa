@@ -1,7 +1,7 @@
 <?php
 
 /**
- * PHP Version: 8.2.X @ https://www.php.net/releases/8.1/en.php
+ * PHP Version: 8.2.X @ https://www.php.net/releases/8.2/en.php
  * Standards:   PSR12 @ https://www.php-fig.org/psr/psr-12/
  *
  * Page formatting:
