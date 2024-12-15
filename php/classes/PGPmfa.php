@@ -30,6 +30,7 @@ class PGPmfa extends PGPgnupg
       throw new \RuntimeException("Failed to initialize the GnuPG PHP extension.");
     }
 
+    // Set the PGP key
     $this->pgpkey = $pgpkey;
   }
 
@@ -42,10 +43,6 @@ class PGPmfa extends PGPgnupg
       return false;
     }
 
-    /* echo '<pre>';
-    print_r($keyData);
-    echo '</pre>'; */
-
     // Save 'fingerprint'
     if (empty($keyData['fingerprint'])) {
       return false;
@@ -54,25 +51,36 @@ class PGPmfa extends PGPgnupg
 
     // Combine welcome message and MFA code
     $mfaMessage = $message . "\n" . $mfaCode;
-    // echo "Message to encrypt: $mfaMessage <br>";
 
     // Add to keyring; 'fingerprint' from the public key
     if ($this->gpg->addencryptkey($this->fingerprint)) {
-      // echo "Key added to keyring <br>";
     }
 
     // Encrypt MFA message with pgpkey
     $encryptedMessage = $this->gpg->encrypt($mfaMessage);
     if ($encryptedMessage != false) {
-      // echo "Encrypted message: <br> $encryptedMessage <br>";
     }
 
     // Remove public key from system keyring
     if ($this->gpg->deletekey($this->fingerprint, true)) {
-      // echo "Key removed from keyring <br>";
       return $encryptedMessage;
     }
 
     return false;
+  }
+
+  public function testPgpkey(): bool
+  {
+    // Import $publicKey; return data as an array
+    $keyData = $this->gpg->import($this->pgpkey);
+
+    if (!is_array($keyData)) {
+      // Invalid PGPkey
+      return false;
+    } else {
+      // Valid PGPkey; remove from system keyring
+      $this->gpg->deletekey($this->pgpkey, true);
+      return true;
+    }
   }
 }
