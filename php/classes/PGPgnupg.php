@@ -27,46 +27,36 @@ class PGPgnupg
   }
 
   /**
-   * Handles calls to any methods/functions not defined by this local class.
-   * Can be used to use bypass the local class and use PHP's
-   * extension class GnuPG's methods/classes directly.
+   * Handles calls to any methods/functions not defined by the class.
    * GnuPG Functions: https://www.php.net/manual/en/ref.gnupg.php
    */
   public function __call(string $method, mixed $arguments)
   {
-    // echo "Method '$method' does not exist in this class. <br>";
-
     // Check for method in PHP's GnuPG class
-    if ($this->methodExists($method)) {
-      // echo "The method '$methodName' exists in the GnuPG class. <br>";
-    } else {
-      // echo "The method '$methodName' does not exist in the GnuPG class. <br>";
+    if ($this->methodExists($method) == false) {
+      throw new \Exception("Method '$method' does not exist in this class.");
     }
-
-    // echo "Called with arguments: " . implode(', ', $arguments) . "<br>";
   }
 
-  private function methodExists(string $methodName): bool
+  private function methodExists(string $method): bool
   {
     $className = 'gnupg';
 
-    // Check if the class exists but not initialized
-    if (!class_exists($className)) {
-      return false;
+    // Check if the class exists (includes PHP globals)
+    if (class_exists($className)) {
+      // Check if the method exists in the class
+      if (method_exists($className, $method)) {
+        return true;
+      }
     }
 
-    // Check if the method exists in the class
-    if (method_exists($className, $methodName)) {
-      return true;
-    } else {
-      return false;
-    }
+    return false;
   }
 
   public function generateMfaCode(int $length = 16)
   {
     // $rBytes turns the use of random_bytes() on/off; default = false/off
-    $rBytes = false;
+    $rBytes = true;
 
     // Set minimum length
     if (intval($length) < 16) {
