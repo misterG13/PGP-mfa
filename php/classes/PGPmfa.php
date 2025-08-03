@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace php\PGP;
 
-// Include the parent class file
+// Parent class location
 $parent = __DIR__ . '/PGPgnupg.php';
 
-// Check if the parent class file exists before including it
+// Check if the parent class file exists
 if (file_exists($parent)) {
+  // Include the parent class file
   require_once $parent;
 } else {
   throw new \Exception("Unable to load parent class. File not found: " . $parent);
@@ -36,17 +37,20 @@ class PGPmfa extends PGPgnupg
 
   public function encryptMessage(string $message = 'Welcome', string $mfaCode)
   {
-    // Import $publicKey data as an array
+    // Import $publicKey data
     $keyData = $this->gpg->import($this->pgpkey);
 
+    // If imported works then an array will exist
     if (!is_array($keyData)) {
       return false;
     }
 
-    // Save 'fingerprint'
+    // Check array for 'fingerprint' of the pgpkey
     if (empty($keyData['fingerprint'])) {
       return false;
     }
+
+    // Save 'fingerprint'
     $this->fingerprint = $keyData['fingerprint'];
 
     // Combine welcome message and MFA code
@@ -58,8 +62,6 @@ class PGPmfa extends PGPgnupg
 
     // Encrypt MFA message with pgpkey
     $encryptedMessage = $this->gpg->encrypt($mfaMessage);
-    if ($encryptedMessage != false) {
-    }
 
     // Remove public key from system keyring
     if ($this->gpg->deletekey($this->fingerprint, true)) {
@@ -74,13 +76,13 @@ class PGPmfa extends PGPgnupg
     // Import $publicKey; return data as an array
     $keyData = $this->gpg->import($this->pgpkey);
 
+    // Invalid PGPkey
     if (!is_array($keyData)) {
-      // Invalid PGPkey
       return false;
-    } else {
-      // Valid PGPkey; remove from system keyring
-      $this->gpg->deletekey($this->pgpkey, true);
-      return true;
     }
+
+    // Valid PGPkey; remove from system keyring
+    $this->gpg->deletekey($this->pgpkey, true);
+    return true;
   }
 }

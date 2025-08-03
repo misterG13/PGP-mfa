@@ -19,6 +19,7 @@ class PGPgnupg
 
     // Initialize GnuPG
     $this->gpg = new \gnupg(); // VS Code reports 'undefined type': ignore
+    // '\' backslash breaks out of the current namespace, to use a global class
 
     // Check object
     if (!is_object($this->gpg)) {
@@ -55,7 +56,7 @@ class PGPgnupg
 
   public function generateMfaCode(int $length = 16)
   {
-    // $rBytes turns the use of random_bytes() on/off; default = false/off
+    // $rBytes turns the use of random_bytes() on/off; false = off
     $rBytes = true;
 
     // Set minimum length
