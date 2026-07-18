@@ -2,30 +2,29 @@
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <title>Multi-factor Authentication with PGP</title>
-    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    {CSS-LOGIN}
+  <meta charset="utf-8">
+  <title>Multi-factor Authentication with PGP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {CSS-AUTHENTICATE}
 </head>
 
 <body>
-    <form>
-        {CSRF-TOKEN}
-        <h1>Authentication</h1>
-        <h3 class="error">{ERROR-DISPLAY}</h3>
-        <div class="container">
-            <textarea name="decryptThis" placeholder="encrypted MFA code" tabindex="1" autofocus
-                readonly>{MFA-CODE}</textarea>
-            <br>
-            <input type="text" name="mfaCode" placeholder="Decrypt MFA Code" maxlength="64" alt="Decrypt MFA Code"
-                tabindex="2">
-            <button type="submit" name="submit" value="authenticate" tabindex="3">Authenticate</button>
-        </div>
-        <div class="container" style="background-color:#f1f1f1">
-            <button class="cancelbtn" type="submit" name="submit" value="newCode" tabindex="4">New Code</button>
-        </div>
-    </form>
+  <form>
+    {CSRF-TOKEN}
+    <h1>Authentication</h1>
+    <h3 class="error">{ERROR-DISPLAY}</h3>
+    <div class="container">
+      <textarea name="decryptThis" placeholder="encrypted MFA code" tabindex="1" autofocus
+        readonly>{MFA-CODE}</textarea>
+      <br>
+      <input type="text" name="mfaCode" placeholder="Decrypt MFA Code" maxlength="64" aria-label="Decrypt MFA Code"
+        tabindex="2">
+      <button type="submit" name="submit" value="authenticate" tabindex="3">Authenticate</button>
+    </div>
+    <div class="container" style="background-color:#f1f1f1">
+      <button class="cancelbtn" type="submit" name="submit" value="newCode" tabindex="4">New Code</button>
+    </div>
+  </form>
 </body>
 
 </html>

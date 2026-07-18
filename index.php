@@ -125,15 +125,15 @@ $htmlUTF8Page = file_get_contents(_ROOT_ . '/html/authenticate.html');
 
 // Replace template placeholders
 
-// {CSS-LOGIN}
+// {CSS-AUTHENTICATE}
 $html = '';
-$loc = _ROOT_ . '/html/css/login.css';
+$loc = _ROOT_ . '/html/css/authenticate.css';
 if (file_exists($loc)) {
   $html  = '<style type="text/css">';
   $html .= file_get_contents($loc);
   $html .= '</style>';
 }
-$htmlUTF8Page = str_replace('{CSS-LOGIN}', $html, $htmlUTF8Page);
+$htmlUTF8Page = str_replace('{CSS-AUTHENTICATE}', $html, $htmlUTF8Page);
 
 // {ERROR-DISPLAY}
 $html         = (!empty($error)) ? $error : '';
