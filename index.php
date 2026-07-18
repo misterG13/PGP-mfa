@@ -27,13 +27,13 @@ defined('_ROOT_') || define('_ROOT_', __DIR__);
 $txtPGPkey = _ROOT_ . '/assets/publicPGPkey.txt';
 
 // Include class file
-include_once _ROOT_ . '/php/classes/PGPmfa.php';
+include_once _ROOT_ . '/php/classes/pgp/PGPMfa.php';
 
 // Insert namespace as an alias
-use php\PGP\PGPmfa as PGPmfa;
+use Classes\PGP\PGPMfa as PGPMfa;
 
 // Verify class include
-if (!class_exists('php\PGP\PGPmfa')) {
+if (!class_exists('Classes\PGP\PGPMfa')) {
   // echo "class failed to include <br>";
 }
 
@@ -49,9 +49,9 @@ if (empty($_SESSION['encryptedMessage'])) {
     $publicKey = file_get_contents($txtPGPkey);
   }
 
-  $pgpMFA = new PGPmfa($publicKey);
+  $pgpMFA = new PGPMfa($publicKey);
 
-  $mfaCode = $pgpMFA->generateMfaCode();
+  $mfaCode = PGPMfa::generateMfaCode();
   if ($mfaCode != false) {
     $_SESSION['mfaCode'] = $mfaCode;
   }
