@@ -1,63 +1,96 @@
-# 'GnuPG' a PHP extension, helpful install tips
+# Installing GnuPG for PHP
 
-## Linux Debian Installation:
+GnuPG (GNU Privacy Guard) is required for the `php-gnupg` extension, which this project uses for PGP encryption and key management.
 
-    * Is very easy because, GnuPG is apart of the
-        repositories for both Debian and Ubuntu
+## Requirements
 
-    ### Debian 12 (bookworm)
+- GnuPG 2.x installed on the system
+- PHP 8.0+ with the `php-gnupg` extension
 
-        * Package 'php-gnupg' is the package equivalent to'php8.2-gnupg'
+## Debian / Ubuntu
 
-        * You can specify a PHP version of your choice by changing the
-            install package to 'php#.#-gnupg'
+GnuPG and the PHP extension are available from the default repositories.
 
-        * Package 'gnupg2' installs the needed packages to run 'php-gnupg'
+```bash
+sudo apt-get update
+sudo apt-get install -y php-gnupg gnupg2
+```
 
-        Install via cli:
-            $ sudo apt-get update
-            $ sudo apt-get install -y php-gnupg gnupg2
+To install for a specific PHP version (e.g., 8.3):
 
+```bash
+sudo apt-get install -y php8.3-gnupg gnupg2
+```
 
-    ### Ubuntu 22.04 LTS (jammy)
+## Fedora / RHEL
 
-        * Package 'php-gnupg' is the package equivalent to'php8.1-gnupg'
+```bash
+sudo dnf install php-gnupg gnupg2
+```
 
-        * You can specify a PHP version of your choice by changing the
-            install package to 'php#.#-gnupg'
+On older systems using `yum`:
 
-        * Package 'gnupg2' installs the needed packages to run 'php-gnupg'
+```bash
+sudo yum install php-gnupg gnupg2
+```
 
-        Install via CLI:
-            $ sudo apt-get update
-            $ sudo apt-get install -y php-gnupg gnupg2
+## macOS
 
-## Verify GNUPG Extension in PHP:
+Install via Homebrew:
 
-    - Create a new file in web root directory
-        'sudo nano phpinfo.php'
+```bash
+brew install gnupg
+```
 
-    - Add this line:
-        'phpinfo();'
+The PHP extension can be installed via PECL:
 
-    - Exit & Save
+```bash
+pecl install gnupg
+```
 
-    - Open phpinfo.php in a web browser
+Then add to your `php.ini`:
 
-    - Search for 'gnupg'
+```ini
+extension=gnupg.so
+```
 
-    - If found = successful install
+## Verify Installation
 
-    ** DELETE this file, never have in production or public **
-        'sudo rm -rf phpinfo.php'
+**CLI method (recommended):**
 
-## Windows Installation
+```bash
+php -m | grep gnupg
+```
 
-    * Extremely sorry but I do not plan on testing this in a Windows environment,
-        so the install support will be limited to none.
+If `gnupg` appears in the output, the extension is loaded.
 
-    Here are some installation links to provide some assistance:
-        - Go to GnuPG's Official website: https://www.gnupg.org/download/index.html
+**Web method:**
 
-        - Scroll down to "GnuPG BINARY RELEASES" follow the link
-            for "Windows Gpg4win": https://gpg4win.org/download.html
+Create a temporary file in your web root:
+
+```bash
+echo '<?php phpinfo();' | sudo tee phpinfo.php
+```
+
+Open `phpinfo.php` in a browser and search for `gnupg`. If the section exists, the extension is active.
+
+Delete the file immediately after verification:
+
+```bash
+sudo rm -f phpinfo.php
+```
+
+> Never leave `phpinfo()` exposed in a production or public environment.
+
+## Windows
+
+Install [Gpg4win](https://gpg4win.org/download.html), which bundles GnuPG and required components for Windows.
+
+For the PHP extension on Windows, see the [php-gnupg PECL page](https://pecl.php.net/package/gnupg).
+
+## Resources
+
+- [GnuPG Downloads](https://gnupg.org/download/)
+- [php-gnupg Manual](https://www.php.net/manual/en/book.gnupg.php)
+- [GnuPG Documentation](https://gnupg.org/documentation/)
+- [Project Installation Guide](../../README.md)
