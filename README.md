@@ -1,33 +1,86 @@
-# PGPmfa() a PHP Class for PGP
+# PGP-MFA: Multi-Factor Authentication with PGP
 
-Multi-factor Authentication using a Public PGP key for web based applications
+PHP-based Multi-Factor Authentication using PGP public keys for web applications.
 
-## Multi-factor Authentication with PGP
+## Overview
 
-Second form (or main form) of authentication to access highly secure web applications.
+A second form of authentication for highly secure web applications. Users generate their own PGP key pairs on a local machine. The public key is provided during sign up, eliminating the need to remember passwords and removing the liability of storing credentials on the server.
 
-A user generates there own PGP key pairs, on a local machine. The Public Key portion of the pair will be required during user sign up. This eliminates the need to remember several passwords and removes liability from a web application having to store secure credentials.
+This project uses the PHP `gnupg` extension (GNU Privacy Guard) to import, encrypt, and validate PGP keys.
 
-This PHP Class interacts with the PHP module/extension known as GnuPG (GNU Privacy Guard). This software allows the web host to import, encrypt/decrypt and test the validity of PGP keys.
+## Features
 
-# Requirements
+- PGP key import, parsing, and validation
+- Encrypted MFA code generation and delivery
+- Timing-safe MFA code verification
+- CSRF token protection
+- Isolated per-instance GPG keyrings (no shared state)
+- SHA-256 hashed session storage
 
-- Linux Debian based system:
-  - [Debian](https://www.debian.org/CD/http-ftp/#stable)
-  - [Ubuntu Server](https://ubuntu.com/download/server#downloads)
-- PHP v5.6 or newer (https://www.php.net/downloads)
-- GnuPG installed on system ([guides/Install-GnuPG](https://github.com/misterG13/PGP-mfa/tree/main/guides/Install-GnuPG))
+## Requirements
 
-# Installation
+- PHP 8.0+ ([download](https://www.php.net/downloads))
+- php-gnupg extension ([manual](https://www.php.net/manual/en/book.gnupg.php))
+- GnuPG installed on the host system ([Install-GnuPG guide](guides/Install-GnuPG/README.md))
 
-- Clone Git
-- On a local machine, not the host system:
-  - Generate a test key pair with PGP (private + public keys)
-- Replace contents of '/assets/publicPGPkey.txt' with your previously generated, Public key
-- Open 'index.php' in your web browser and follow the prompts
-  - On success; you will see an encrypted message
-  - Copy this message to your local machine with the Private key
-  - Decrypt this message and copy the code inside
-  - Paste the code as a password to continue the log in process
-- OR
-- Copy 'PGPmfa.php' from '/php/' folder and reference the class as needed in your own application. The inline documentation is always growing in clarity.
+## Installation
+
+1. Clone the repository
+2. On a local machine (not the host), generate a PGP key pair
+3. Copy your public key into `assets/publicPGPkey.txt`
+4. Open `index.php` in a web browser
+5. On success, you will see an encrypted message in the textarea
+6. Copy the message to your local machine and decrypt it with your private key
+7. Enter the decrypted code to authenticate
+
+## Usage
+
+### Web Interface
+
+Open `index.php` in a browser. The page generates an MFA code, encrypts it with your public PGP key, and displays the ciphertext. Decrypt it locally and enter the code to authenticate.
+
+### Programmatic
+
+```php
+use Classes\PGP\PGPMfa;
+
+$pgpMfa = new PGPMfa($publicKey);
+
+// Generate a 16-byte hex MFA code
+$mfaCode = PGPMfa::generateMfaCode();
+
+// Encrypt a message with the MFA code appended
+$encrypted = $pgpMfa->encryptMessage('Your verification message', $mfaCode);
+
+// Verify a user-supplied code against a stored hash
+$valid = PGPMfa::verifyMfaCode($userInput, $storedHash);
+```
+
+## Project Structure
+
+```
+PGP-mfa/
+├── assets/
+│   └── publicPGPkey.txt      # Your PGP public key
+├── html/
+│   ├── authenticate.html      # Auth form template
+│   └── css/
+│       └── authenticate.css   # Form styles
+├── php/
+│   └── classes/
+│       └── pgp/
+│           ├── PGPMfa.php     # MFA encryption and verification
+│           └── PGPgnupg.php   # Base GnuPG wrapper
+├── guides/
+│   └── Install-GnuPG/         # GnuPG installation guide
+└── index.php                  # Entry point
+```
+
+## Guides
+
+- [Install GnuPG](guides/Install-GnuPG/README.md)
+- [Usage Examples](guides/Usage-PGPmfa/README.md)
+
+## Author
+
+MisterG13
